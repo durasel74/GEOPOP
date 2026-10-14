@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEOPOP — генератор геометрических аватарок</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="wrap">
+  <div>
+    <h1>GEO<span class="mark">POP</span></h1>
+    <p class="tag">ГЕНЕРАТОР АВАТАРОК</p>
+  </div>
+  <div class="hright">
+    <div class="hmeta">
+      <div class="hm"><span class="lbl">ID ГЕНЕРАЦИИ</span><span class="val" id="mSeed">0x——</span></div>
+    </div>
+    <button class="favbtn" id="favBtn" title="Галерея избранных аватарок">
+      <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5C7 16.5 3 13.3 3 9.3 3 6.4 5.2 4.5 7.7 4.5c1.7 0 3.3.9 4.3 2.4 1-1.5 2.6-2.4 4.3-2.4 2.5 0 4.7 1.9 4.7 4.8 0 4-4 7.2-9 11.2Z"/></svg>
+      <span>ИЗБРАННОЕ</span><b class="cnt" id="favCount">0</b>
+    </button>
+  </div>
+</header>
+
+<!-- ══════════ РЕДАКТОР ══════════ -->
+<main class="wrap" id="editorView">
+  <section class="stage">
+    <div class="portWrap">
+      <div class="orbit" id="orbit" aria-hidden="true"></div>
+      <div class="port" id="port">
+        <canvas id="cv" width="512" height="512" role="img" aria-label="Сгенерированная аватарка"></canvas>
+      </div>
+    </div>
+    <div class="meta" id="meta">SEED 0x—— · 512×512</div>
+
+    <div class="sizes">
+      <span class="slbl">РАЗМЕР</span>
+      <div class="seg" id="sizes">
+        <button data-s="128">128</button>
+        <button data-s="256">256</button>
+        <button data-s="512" class="on">512</button>
+        <button data-s="1024">1024</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="btnCopy" title="Скопировать PNG в буфер обмена (C)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11" height="11" rx="1"/><path d="M5 15V5a1 1 0 0 1 1-1h10"/></svg>
+        КОПИРОВАТЬ
+      </button>
+      <button class="btn" id="btnSave" title="Скачать PNG (S)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10m0 0 4-4m-4 4-4-4M4 19h16"/></svg>
+        СКАЧАТЬ PNG
+      </button>
+      <button class="btn" id="btnLike" title="Добавить в избранное">
+        <svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5C7 16.5 3 13.3 3 9.3 3 6.4 5.2 4.5 7.7 4.5c1.7 0 3.3.9 4.3 2.4 1-1.5 2.6-2.4 4.3-2.4 2.5 0 4.7 1.9 4.7 4.8 0 4-4 7.2-9 11.2Z"/></svg>
+        В ИЗБРАННОЕ
+      </button>
+    </div>
+    <p class="keys">SPACE — генерация · C — копировать · S — скачать</p>
+
+    <div class="previews">
+      <div class="pv-head"><span class="slbl">ПРИМЕРКА</span></div>
+      <div class="pv-row" id="pvRow"></div>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="panel">
+      <button class="btn genBig" id="btnGen">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h4.2c4.6 0 4.6 10 9.2 10H20"/><path d="M3 17h4.2c1.7 0 2.8-.8 3.7-2"/><path d="M13.4 9.2c.9-1.3 2-2.2 3.8-2.2H20"/><path d="M17 4l3 3-3 3"/><path d="M17 14l3 3-3 3"/></svg>
+        ГЕНЕРИРОВАТЬ <kbd>SPACE</kbd>
+      </button>
+    </div>
+
+    <div class="panel">
+      <h2 class="ph">Цветовая схема</h2>
+      <div class="t-viewport" id="tViewport">
+        <div class="t-track" id="tTrack"></div>
+      </div>
+      <div class="t-nav">
+        <button class="t-arrow" id="tPrev" title="Предыдущая страница"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 6 8.5 12l6 6"/></svg></button>
+        <div class="t-dots" id="tDots"></div>
+        <button class="t-arrow" id="tNext" title="Следующая страница"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="adv-head">
+        <h2 class="ph">Расширенный режим</h2>
+        <button class="switch" id="advSw" role="switch" aria-checked="false" title="Включить ручную настройку слоёв"><i></i></button>
+      </div>
+      <p class="adv-note" id="advNote">Ручная настройка слоёв: выбор варианта по превью, цвет и блокировка элемента от генерации.</p>
+      <div class="layers" id="layers" hidden></div>
+    </div>
+  </aside>
+</main>
+
+<!-- ══════════ ГАЛЕРЕЯ ══════════ -->
+<section class="wrap" id="galleryView" hidden>
+  <div class="g-head">
+    <h2 class="g-title">ИЗБРАННОЕ <span class="cnt" id="gCount">0</span></h2>
+    <button class="btn" id="btnBack">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m0 0 6-6m-6 6 6 6"/></svg>
+      В РЕДАКТОР
+    </button>
+  </div>
+  <div class="g-grid" id="gGrid"></div>
+  <div class="g-empty" id="gEmpty">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5C7 16.5 3 13.3 3 9.3 3 6.4 5.2 4.5 7.7 4.5c1.7 0 3.3.9 4.3 2.4 1-1.5 2.6-2.4 4.3-2.4 2.5 0 4.7 1.9 4.7 4.8 0 4-4 7.2-9 11.2Z"/></svg>
+    <p>Пока пусто. Нажми «В ИЗБРАННОЕ» под аватаркой — и она появится здесь. Избранное хранится в браузере.</p>
+  </div>
+</section>
+
+<div id="toasts"></div>
+
+<!-- ══════════ СКРИПТЫ ══════════
+     Порядок ВАЖЕН: сначала утилиты и темы, потом варианты слоёв
+     (наполняют реестр VAR), затем движок, интерфейс и запуск. -->
+<script src="js/core.js"></script>
+<script src="js/themes.js"></script>
+<script src="js/variants/bg.js"></script>
+<script src="js/variants/emblem.js"></script>
+<script src="js/variants/frame.js"></script>
+<script src="js/variants/accents.js"></script>
+<script src="js/variants/overlay.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
